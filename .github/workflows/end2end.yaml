@@ -22,13 +22,16 @@ jobs:
         helm version
     - name: Install Canary
       run: |
-        #export KUBECONFIG=/var/lib/rancher/k3s/server/cred/admin.kubeconfig
         helm upgrade -i canary-00 \
+          --atomic
+          --timeout 300s
           --set mesh.MESH_NAME=canary-00 \
           --set mesh.MESH_JOIN_ADDRESS=canary-00-canary-bot-mesh:8081 \
           --set mesh.MESH_TARGET=canary-01-canary-bot-mesh:8081 \
           --set addEnv.MESH_TOKEN=12345678 chart
         helm upgrade -i canary-01 \
+          --atomic
+          --timeout 300s
           --set mesh.MESH_NAME=canary-01 \
           --set mesh.MESH_JOIN_ADDRESS=canary-01-canary-bot-mesh:8081 \
           --set mesh.MESH_TARGET=canary-00-canary-bot-mesh:8081 \
