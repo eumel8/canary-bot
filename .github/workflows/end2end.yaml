@@ -20,7 +20,7 @@ jobs:
       run: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
         helm version
-    - name: Install Canary
+    - name: Install Canary 00
       run: |
         helm upgrade -i canary-00 \
           --atomic \
@@ -29,6 +29,8 @@ jobs:
           --set mesh.MESH_JOIN_ADDRESS=canary-00-canary-bot-mesh:8081 \
           --set mesh.MESH_TARGET=canary-01-canary-bot-mesh:8081 \
           --set addEnv.MESH_TOKEN=12345678 chart
+    - name: Install Canary 01
+      run: |
         helm upgrade -i canary-01 \
           --atomic \
           --timeout 300s \
@@ -41,10 +43,13 @@ jobs:
         kubectl get pods
     - name: Check Canary 00
       run: |
-        SERVICE=$(kubectl get services canary-00-canary-bot-api -o jsonpath={.spec.clusterIP})
-        curl -v -H 'Authorization: Bearer 12345678' -H 'Content-Type: application/json' $SERVICE:8080/api/v1/samples 
+        kubectl port-forward service/canary-00-canary-bot-api 8080:8080 &
+        curl -v -H 'Authorization: Bearer 12345678' -H 'Content-Type: application/json' 127.0.0.1:8080/api/v1/samples 
     - name: Check Canary 01
       run: |
-        SERVICE=$(kubectl get services canary-01-canary-bot-api -o jsonpath={.spec.clusterIP})
-        curl -v -H 'Authorization: Bearer 12345678' -H 'Content-Type: application/json' $SERVICE:8080/api/v1/samples 
-
+        kubectl port-forward service/canary-01-canary-bot-api 8080:8080 &
+        curl -v -H 'Authorization: Bearer 12345678' -H 'Content-Type: application/json' 127.0.0.1:8080/api/v1/samples 
+    #- name: Check Canary 01
+    #  run: |
+    #    SERVICE=$(kubectl get services canary-01-canary-bot-api -o jsonpath={.spec.clusterIP})
+    #    curl -v -H 'Authorization: Bearer 12345678' -H 'Content-Type: application/json' ${SERVICE}:8080/api/v1/samples 
