@@ -53,3 +53,15 @@ jobs:
           kubectl delete job curl
           exit 1
         fi
+    - name: Check Canary 01
+      run: |
+        kubectl create job curl --image=mtr.devops.telekom.de/mcsps/curl:7.65.3 -- curl -f -v -H 'Authorization: Bearer 12345678' -H 'Content-Type: application/json'  http://canary-01-canary-bot-api:8080/api/v1/samples
+        kubectl wait --for=condition=complete job/curl
+        STATUS=$(kubectl get job curl -o jsonpath={.status.succeeded})
+        if [[ $STATUS  -ne  1 ]]
+        then
+          echo "Job failed"
+          kubectl logs -ljob-name=curl
+          kubectl delete job curl
+          exit 1
+        fi
